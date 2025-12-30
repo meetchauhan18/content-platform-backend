@@ -1,4 +1,9 @@
 import Article from "./models/Article.js";
+import {
+  PAGINATION,
+  ARTICLE_STATUS,
+  SORT_ORDER,
+} from "../../shared/constants/index.js";
 
 class ArticleRepository {
   constructor(ArticleModel) {
@@ -56,7 +61,7 @@ class ArticleRepository {
 
     // By default, only return published articles
     if (!options.includeUnpublished) {
-      query.status = "published";
+      query.status = ARTICLE_STATUS.PUBLISHED;
     }
 
     let mongoQuery = this.Article.findOne(query);
@@ -77,21 +82,21 @@ class ArticleRepository {
    */
   findPublished = async (options = {}) => {
     const {
-      page = 1,
-      limit = 10,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT,
       sortBy = "publishedAt",
-      sortOrder = "desc",
+      sortOrder = SORT_ORDER.DESC,
       tag = null,
     } = options;
 
-    const query = { status: "published" };
+    const query = { status: ARTICLE_STATUS.PUBLISHED };
 
     if (tag) {
       query.tags = tag;
     }
 
     const skip = (page - 1) * limit;
-    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+    const sort = { [sortBy]: sortOrder === SORT_ORDER.DESC ? -1 : 1 };
 
     const [articles, total] = await Promise.all([
       this.Article.find(query)
@@ -123,11 +128,11 @@ class ArticleRepository {
    */
   findByAuthor = async (authorId, options = {}) => {
     const {
-      page = 1,
-      limit = 10,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT,
       status = null,
       sortBy = "createdAt",
-      sortOrder = "desc",
+      sortOrder = SORT_ORDER.DESC,
     } = options;
 
     const query = { author: authorId };
@@ -137,7 +142,7 @@ class ArticleRepository {
     }
 
     const skip = (page - 1) * limit;
-    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+    const sort = { [sortBy]: sortOrder === SORT_ORDER.DESC ? -1 : 1 };
 
     const [articles, total] = await Promise.all([
       this.Article.find(query).sort(sort).skip(skip).limit(limit).lean(),
@@ -163,9 +168,10 @@ class ArticleRepository {
    * @param {Object} options - Pagination options
    */
   findByTag = async (tag, options = {}) => {
-    const { page = 1, limit = 10 } = options;
+    const { page = PAGINATION.DEFAULT_PAGE, limit = PAGINATION.DEFAULT_LIMIT } =
+      options;
 
-    const query = { tags: tag, status: "published" };
+    const query = { tags: tag, status: ARTICLE_STATUS.PUBLISHED };
     const skip = (page - 1) * limit;
 
     const [articles, total] = await Promise.all([
@@ -209,7 +215,7 @@ class ArticleRepository {
   /**
    * Update article status
    * @param {string} id - Article ID
-   * @param {string} status - New status ('draft', 'published', 'archived', 'unlisted')
+   * @param {string} status - New status (use ARTICLE_STATUS constants)
    * @param {Object} additionalUpdates - Additional fields to update (e.g., publishedAt)
    */
   updateStatus = async (id, status, additionalUpdates = {}) => {

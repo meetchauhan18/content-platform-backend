@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { READING_SPEED_WPM, CONTENT_LIMITS } from "../constants/index.js";
 
 /**
  * Generate a URL-safe slug from a title
@@ -99,22 +100,24 @@ export const calculateWordCount = (text) => {
 };
 
 /**
- * Calculate reading time in minutes (average 200 words per minute)
+ * Calculate reading time in minutes
  * @param {number} wordCount - Number of words
  * @returns {number} Estimated reading time in minutes
  */
 export const calculateReadingTime = (wordCount) => {
-  const WORDS_PER_MINUTE = 200;
-  return Math.ceil(wordCount / WORDS_PER_MINUTE);
+  return Math.ceil(wordCount / READING_SPEED_WPM);
 };
 
 /**
  * Generate excerpt from plain text
  * @param {string} text - Plain text
- * @param {number} maxLength - Maximum excerpt length
+ * @param {number} maxLength - Maximum excerpt length (defaults to CONTENT_LIMITS.EXCERPT_MAX)
  * @returns {string} Truncated excerpt
  */
-export const generateExcerpt = (text, maxLength = 300) => {
+export const generateExcerpt = (
+  text,
+  maxLength = CONTENT_LIMITS.EXCERPT_MAX
+) => {
   if (!text || typeof text !== "string") return "";
 
   const cleaned = text.trim().replace(/\s+/g, " ");

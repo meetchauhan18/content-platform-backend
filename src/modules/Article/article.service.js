@@ -4,6 +4,7 @@ import {
   calculateArticleMetadata,
   extractPlainText,
 } from "../../shared/utils/utils.js";
+import { ARTICLE_STATUS } from "../../shared/constants/index.js";
 import articleRepository from "./article.repository.js";
 import userRepository from "../user/user.repository.js";
 
@@ -51,7 +52,7 @@ class ArticleService {
       plainText,
       metadata,
       tags: tags || [],
-      status: "draft",
+      status: ARTICLE_STATUS.DRAFT,
     };
 
     const article = await this.articleRepository.create(articleData);
@@ -102,7 +103,7 @@ class ArticleService {
 
     // Increment view count if viewer is not the owner
     if (
-      article.status === "published" &&
+      article.status === ARTICLE_STATUS.PUBLISHED &&
       (!userId || article.author._id.toString() !== userId.toString())
     ) {
       await this.articleRepository.incrementStat(article._id, "views");
@@ -169,7 +170,7 @@ class ArticleService {
     // Get only published articles
     return this.articleRepository.findByAuthor(user._id, {
       ...options,
-      status: "published",
+      status: ARTICLE_STATUS.PUBLISHED,
     });
   };
 
@@ -247,7 +248,7 @@ class ArticleService {
       );
     }
 
-    if (article.status === "published") {
+    if (article.status === ARTICLE_STATUS.PUBLISHED) {
       throw AppError.badRequestError("Article is already published");
     }
 
@@ -258,7 +259,7 @@ class ArticleService {
       );
     }
 
-    return this.articleRepository.updateStatus(id, "published", {
+    return this.articleRepository.updateStatus(id, ARTICLE_STATUS.PUBLISHED, {
       publishedAt: new Date(),
     });
   };
@@ -277,11 +278,11 @@ class ArticleService {
       );
     }
 
-    if (article.status !== "published") {
+    if (article.status !== ARTICLE_STATUS.PUBLISHED) {
       throw AppError.badRequestError("Article is not published");
     }
 
-    return this.articleRepository.updateStatus(id, "draft", {
+    return this.articleRepository.updateStatus(id, ARTICLE_STATUS.DRAFT, {
       $unset: { publishedAt: "" },
     });
   };
