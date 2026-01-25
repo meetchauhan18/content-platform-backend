@@ -22,6 +22,7 @@ import adminRoutes from "./modules/admin/admin.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import articleRoutes from "./modules/Article/article.routes.js";
 
+// intialize the express app
 const app = express();
 
 // Middlewares
@@ -29,7 +30,9 @@ app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use((req, res, next) => {
-  req.requestId = req.headers["x-request-id"] || crypto.randomUUID();
+  req.requestId =
+    req.headers["x-request-id"] ||
+    (crypto.randomUUID() ?? Math.random().toString(36).slice(2));
   res.set("x-request-id", req.requestId);
   next();
 });
@@ -38,7 +41,7 @@ app.use(
     origin: process.env.VITE_FRONTEND_URL,
     credentials: true,
     optionsSuccessStatus: 200,
-  })
+  }),
 );
 
 // Security Middlewares
@@ -51,7 +54,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(
     morgan("combined", {
       stream: { write: (message) => logger.info(message.trim()) },
-    })
+    }),
   );
 }
 
